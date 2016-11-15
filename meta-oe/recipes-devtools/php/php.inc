@@ -13,6 +13,7 @@ SRC_URI = "http://php.net/distributions/php-${PV}.tar.bz2 \
            file://acinclude-xml2-config.patch \
            file://0001-php-don-t-use-broken-wrapper-for-mkdir.patch \
            file://0001-acinclude-use-pkgconfig-for-libxml2-config.patch \
+           file://flock-type-crosscompile.patch \
           "
 
 SRC_URI_append_class-target += " \
@@ -43,7 +44,9 @@ PHP_LIBDIR = "${libdir}/php5"
 COMMON_EXTRA_OECONF = "--enable-sockets \
                        --enable-pcntl \
                        --enable-shared \
-                       --disable-opcache \
+                       --with-flock-type=linux \
+                       --enable-opcache \
+                       --enable-opcache-file \
                        --disable-rpath \
                        --with-pic \
                        --libdir=${PHP_LIBDIR} \
@@ -96,7 +99,9 @@ PACKAGECONFIG[imap] = "--with-imap=${STAGING_DIR_HOST} \
 export PHP_NATIVE_DIR = "${STAGING_BINDIR_NATIVE}"
 export PHP_PEAR_PHP_BIN = "${STAGING_BINDIR_NATIVE}/php"
 CFLAGS += " -D_GNU_SOURCE -g -DPTYS_ARE_GETPT -DPTYS_ARE_SEARCHED -I${STAGING_INCDIR}/apache2"
+CFLAGS += " -DHAVE_LIBDL"
 CFLAGS_append_aarch64 = " -O2"
+LDFLAGS += " -ldl"
 
 EXTRA_OEMAKE = "INSTALL_ROOT=${D}"
 
@@ -235,6 +240,7 @@ FILES_${PN}-dev = "${includedir}/php ${PHP_LIBDIR}/build ${bindir}/phpize \
                 ${PHP_LIBDIR}/php/.lock ${PHP_LIBDIR}/php/test"
 FILES_${PN} = "${PHP_LIBDIR}/php"
 FILES_${PN} += "${bindir}"
+FILES_${PN} += "${PHP_LIBDIR}/extensions"
 
 SUMMARY_${PN}-modphp = "PHP module for the Apache HTTP server"
 FILES_${PN}-modphp = "${libdir}/apache2 ${sysconfdir}"
